@@ -29,7 +29,7 @@ route:
 receivers:
   - name: "telegram"
     telegram_configs:
-      - bot_token: 6802118243:AAFIhcmN1KEKhyXQQ00XJ-AZRM54pamVokE
+      - bot_token: telegram-bot-token
         api_url: https://api.telegram.org
         chat_id: -1002075551235
         parse_mode: ''
