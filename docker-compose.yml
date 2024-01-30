@@ -1,0 +1,119 @@
+version: '3.8'
+
+networks:
+  #  monitoring:
+  #    driver: bridge
+  #    external: true
+
+  hostclone:
+    external: true
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+  #    network_mode: host
+  #    networks:
+  #     - monitoring
+  #      - hostclone
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: redis-exporter
+    restart: unless-stopped
+    #    network_mode: host
+    expose:
+      - 9121
+    command:
+      - '--redis.addr=host.docker.internal:6379'
+  #    networks:
+  #      - monitoring
+  #      - hostclone
+  #    extra_hosts:
+  #      - "host.docker.internal:host-gateway"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+  #    network_mode: host
+  #    networks:
+  #      - monitoring
+  #      - hostclone
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+  #    network_mode: host
+  #    networks:
+  #      - monitoring
+  #      - hostclone
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    expose:
+      - 9093
+  #    network_mode: host
+  #    ports:
+  #      - 9093:9093
+  #    networks:
+  #      - monitoring
+  #      - hostclone
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    expose:
+      - 8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+#    network_mode: host
+#    networks:
+#      - monitoring
+#      - hostclone
