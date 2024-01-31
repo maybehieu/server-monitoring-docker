@@ -6,7 +6,7 @@ global:
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
   external_labels:
-    monitor: "codelab-monitor"
+    monitor: "server-monitor"
 
 alerting:
   alertmanagers:
@@ -38,3 +38,8 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['redis-exporter:9121']
+
+  - job_name: 'mongo'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['mongo-exporter:9216']

@@ -49,6 +49,19 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  mongo-exporter:
+    image: percona/mongodb_exporter:0.40.0
+    container_name: mongo-exporter
+    restart: unless-stopped
+    expose:
+      - 9216
+    command:
+      - '--mongodb.uri=mongodb://host.docker.internal:27017'
+      - '--collect-all'
+      - '--compatible-mode'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
